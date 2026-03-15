@@ -35,14 +35,45 @@
 
 | Component             | Technology | Notes                                             |
 | --------------------- | ---------- | ------------------------------------------------- |
-| Frontend              | React      | Audio recording, chat interface, conversation history |
-| Backend               | FastAPI (Python) | Orchestrates STT → LLM → TTS pipeline |
+| Frontend              | React + TypeScript | Audio recording, chat interface, conversation history |
+| Backend               | FastAPI (Python) + Type Hints | Orchestrates STT → LLM → TTS pipeline |
 | STT (Speech-to-Text)  | Whisper large-v3-turbo | Excellent German accuracy, 8x faster than large |
 | AI Model              | Ollama + OpenEuroLLM-German (7B) | Purpose-built for German conversation |
 | TTS (Text-to-Speech)  | Coqui TTS + German Thorsten voice | Natural German pronunciation |
 | Packaging (later)     | Tauri | Simpler than Electron, Rust-based |
 
 **System Requirements:** MacBook Air M2 + 16GB RAM (perfect for this project!)
+
+---
+
+### Development Approach Decisions
+
+**Development Environment: Native (No Docker)**
+- Develop directly on MacBook M2 for optimal AI model performance
+- Docker containers only for final distribution, not development
+- Native setup provides better GPU acceleration and memory access for Ollama, Whisper, and TTS
+- Faster iteration and debugging without container overhead
+
+**CI/CD: Minimal Approach**
+- Skip complex CI/CD pipeline - limited value for local AI application
+- Manual testing for AI components (voice interactions can't be easily automated)
+- Optional: Basic GitHub Actions for code linting and formatting only
+- Focus development time on AI integration rather than CI/CD complexity
+- Distribution via manually built Docker images when ready to share
+
+**Type Safety: TypeScript + Python Type Hints**
+- TypeScript for frontend: Essential for audio API complexity and React state management
+- Python type hints: FastAPI auto-generates docs, improves AI service integration reliability
+- Portfolio benefit: Demonstrates professional development practices
+- Error prevention: Complex STT → LLM → TTS data flow benefits from type safety
+- Minimal overhead: Both ecosystems have excellent TypeScript/typing support built-in
+
+**Architectural Decisions**
+- **Error Handling**: Graceful degradation with fallback to text mode, automatic model fallbacks to smaller models, clear user feedback with progress indicators
+- **Data Storage**: SQLite for conversation history and user progress (enables querying and analytics), local-only storage for privacy, user-controlled data retention
+- **Configuration**: Environment variables + automatic hardware detection (RAM-based model selection), user override capabilities, runtime configuration validation  
+- **Security**: Conservative approach with audio file validation, AI output sanitization, secure temp file management, input validation on all endpoints
+- **Documentation**: Auto-generated API documentation from FastAPI, comprehensive user/developer guides, structured code commenting standards
 
 ---
 
@@ -140,3 +171,31 @@ By completing this project, you'll master:
 * **Learning-optimized:** Understand every component of the AI pipeline
 * **Portfolio-worthy:** Real AI software development + deployment experience
 * **Scalable:** Can add features like lesson generation, conversation export, or mobile deployment later
+
+---
+
+### Realistic Advantages Over ChatGPT Voice Conversations
+
+While ChatGPT now offers voice conversations in German, this app still provides meaningful advantages:
+
+**Specialized Learning Design:**
+* Purpose-built learning progression with systematic proficiency tracking
+* Pedagogically-designed interactions optimized for language acquisition
+* German-specific error correction focused on common learner mistakes
+
+**Persistent Learning Context:**
+* Long-term progress tracking that remembers vocabulary level and grammar weaknesses
+* Adaptive difficulty that consistently maintains appropriate challenge level
+* Learning analytics with concrete feedback on improvement areas
+
+**Cost and Access Benefits:**
+* Unlimited practice sessions without usage limits or subscription costs
+* Complete offline capability for practice without internet connection
+* Full privacy with all conversations staying on local device
+
+**German-Optimized Performance:**
+* OpenEuroLLM-German model potentially offers better German grammar accuracy
+* Consistent German cultural authenticity and linguistic patterns
+* No risk of language switching mid-conversation
+
+**Assessment:** This app provides **incremental but meaningful improvements** over general-purpose AI tools. The value is particularly strong for serious German learners who want structured, unlimited practice without ongoing costs. The development experience remains highly valuable for mastering local AI integration regardless of the competitive landscape.
