@@ -13,19 +13,27 @@
 [User Voice Input]
        │
        ▼
-[STT: Whisper large-v3-turbo]  ---> German speech → text
+[STTService]  ---> German speech → text
+  ├── LocalWhisperProvider  (offline, free)
+  └── OpenAISTTProvider     (fast, cloud)
        │
        ▼
-[AI Model: Ollama + OpenEuroLLM-German]  ---> German conversation with adaptive difficulty
+[LLMService]  ---> German conversation with adaptive difficulty
+  ├── OllamaProvider        (offline, free, ~3-5s)
+  └── OpenAIProvider        (fast, near-instant, GPT-4o)
        │
        ▼
-[TTS: Coqui TTS + German Thorsten voice]  ---> Natural German speech output
+[TTSService]  ---> Natural German speech output
+  ├── CoquiProvider         (offline, free)
+  └── OpenAITTSProvider     (fast, high quality)
        │
        ▼
 [React Frontend + FastAPI Backend]  ---> Local web app (localhost)
 ```
 
-* All processing stays **local and offline** on MacBook M2.
+* **Provider pattern:** Switch between local and OpenAI providers via a single `.env` config change.
+* **Develop locally for free** using Ollama + local Whisper + Coqui TTS.
+* **Switch to OpenAI** for real-time quality voice conversations.
 * FastAPI (Python) orchestrates all AI components.
 * React frontend handles UI and audio recording/playback.
 
@@ -37,9 +45,13 @@
 | --------------------- | ---------- | ------------------------------------------------- |
 | Frontend              | React + TypeScript | Audio recording, chat interface, conversation history |
 | Backend               | FastAPI (Python) + Type Hints | Orchestrates STT → LLM → TTS pipeline |
-| STT (Speech-to-Text)  | Whisper large-v3-turbo | Excellent German accuracy, 8x faster than large |
-| AI Model              | Ollama + OpenEuroLLM-German (7B) | Purpose-built for German conversation |
-| TTS (Text-to-Speech)  | Coqui TTS + German Thorsten voice | Natural German pronunciation |
+| STT — Local           | Whisper large-v3-turbo | Free, offline, excellent German accuracy |
+| STT — Cloud           | OpenAI Whisper API | Fast, same model, no local compute needed |
+| AI Model — Local      | Ollama + llama3.2 | Free, offline, ~3-5s response time |
+| AI Model — Cloud      | OpenAI GPT-4o | Near-instant, best quality, small cost per call |
+| TTS — Local           | Coqui TTS | Free, offline |
+| TTS — Cloud           | OpenAI TTS API | Fast, natural sounding |
+| Provider switching    | `.env` config | One line to switch between local and OpenAI |
 | Packaging (later)     | Tauri | Simpler than Electron, Rust-based |
 
 **System Requirements:** MacBook Air M2 + 16GB RAM (perfect for this project!)
@@ -69,9 +81,10 @@
 - Minimal overhead: Both ecosystems have excellent TypeScript/typing support built-in
 
 **Architectural Decisions**
-- **Error Handling**: Graceful degradation with fallback to text mode, automatic model fallbacks to smaller models, clear user feedback with progress indicators
+- **Provider Pattern**: All AI services (LLM, STT, TTS) use a provider abstraction — swap between local and OpenAI with a single `.env` change. No code changes required.
+- **Error Handling**: Graceful degradation with fallback to text mode, automatic provider fallbacks, clear user feedback with progress indicators
 - **Data Storage**: SQLite for conversation history and user progress (enables querying and analytics), local-only storage for privacy, user-controlled data retention
-- **Configuration**: Environment variables + automatic hardware detection (RAM-based model selection), user override capabilities, runtime configuration validation  
+- **Configuration**: Environment variables control provider selection (`LLM_PROVIDER=ollama|openai`, `STT_PROVIDER=local|openai`, `TTS_PROVIDER=local|openai`), runtime configuration validation
 - **Security**: Conservative approach with audio file validation, AI output sanitization, secure temp file management, input validation on all endpoints
 - **Documentation**: Auto-generated API documentation from FastAPI, comprehensive user/developer guides, structured code commenting standards
 
@@ -90,18 +103,18 @@
 ### Development Phases - AI Learning Focused
 
 **Phase 1: AI Foundation Setup (Days 1-3)**
-**Learning Goals:** Local AI ecosystem, model management
-* Install Ollama and explore local model management
-* Test German models: SmolLM2-German → OpenEuroLLM-German  
-* Set up FastAPI project structure
-* Create basic LLM chat endpoint and verify M2 performance
+**Learning Goals:** Local AI ecosystem, provider pattern architecture
+* Install Ollama and verify German language capability with llama3.2 ✅
+* Set up FastAPI project structure with provider pattern
+* Build LLMService with OllamaProvider and OpenAIProvider
+* Create basic LLM chat endpoint that works with both providers
 
-**Phase 2: Speech Processing Pipeline (Days 4-6)** 
-**Learning Goals:** Audio processing, STT/TTS integration
-* Integrate Whisper for German speech-to-text
-* Add Coqui TTS for German text-to-speech  
+**Phase 2: Speech Processing Pipeline (Days 4-6)**
+**Learning Goals:** Audio processing, STT/TTS provider integration
+* Build STTService with LocalWhisperProvider and OpenAISTTProvider
+* Build TTSService with CoquiProvider and OpenAITTSProvider
 * Create voice processing FastAPI endpoints
-* Test complete STT → LLM → TTS pipeline
+* Test complete STT → LLM → TTS pipeline with both local and OpenAI providers
 
 **Phase 3: Frontend Integration (Days 7-10)**
 **Learning Goals:** AI-powered UI, real-time audio
@@ -131,7 +144,9 @@
 ### Key Learning Outcomes
 
 By completing this project, you'll master:
+* **Provider pattern architecture** — a professional design pattern used in real production apps
 * **Local AI model management** with Ollama
+* **Cloud AI API integration** with OpenAI (GPT-4o, Whisper, TTS)
 * **Speech processing pipelines** (STT/TTS integration)
 * **AI application architecture** (FastAPI + React patterns)
 * **Prompt engineering** for language learning applications
@@ -165,37 +180,38 @@ By completing this project, you'll master:
 
 ### Architecture Benefits
 
-* **Completely FREE:** No API costs, runs entirely on student devices
-* **Privacy-focused:** All data stays local, works offline  
-* **Shareable:** Easy distribution to classmates via Docker or executables
-* **Learning-optimized:** Understand every component of the AI pipeline
-* **Portfolio-worthy:** Real AI software development + deployment experience
-* **Scalable:** Can add features like lesson generation, conversation export, or mobile deployment later
+* **Flexible:** Switch between free local models and OpenAI quality with one config change
+* **Free to develop:** Local providers cost nothing during development and testing
+* **ChatGPT-quality voice:** OpenAI provider delivers near-instant, natural German conversation
+* **Privacy option:** Local providers keep all data on device, works fully offline
+* **Shareable:** Classmates can use local providers for free, or bring their own OpenAI key
+* **Portfolio-worthy:** Provider pattern is a real professional architecture pattern
+* **Scalable:** Easy to add more providers (Anthropic, Gemini, etc.) in the future
 
 ---
 
-### Realistic Advantages Over ChatGPT Voice Conversations
+### Advantages Over Using ChatGPT Voice Directly
 
-While ChatGPT now offers voice conversations in German, this app still provides meaningful advantages:
+With the OpenAI provider, this app matches ChatGPT Voice quality — and adds what ChatGPT doesn't offer:
 
 **Specialized Learning Design:**
 * Purpose-built learning progression with systematic proficiency tracking
 * Pedagogically-designed interactions optimized for language acquisition
-* German-specific error correction focused on common learner mistakes
+* German-specific grammar correction focused on common learner mistakes
 
 **Persistent Learning Context:**
 * Long-term progress tracking that remembers vocabulary level and grammar weaknesses
 * Adaptive difficulty that consistently maintains appropriate challenge level
 * Learning analytics with concrete feedback on improvement areas
 
-**Cost and Access Benefits:**
-* Unlimited practice sessions without usage limits or subscription costs
-* Complete offline capability for practice without internet connection
-* Full privacy with all conversations staying on local device
+**Flexibility:**
+* Switch to free local mode when offline or to save API costs
+* Your own UI tailored for language learning (not a general assistant)
+* Full control over conversation prompts and tutoring behaviour
 
-**German-Optimized Performance:**
-* OpenEuroLLM-German model potentially offers better German grammar accuracy
-* Consistent German cultural authenticity and linguistic patterns
-* No risk of language switching mid-conversation
+**Portfolio Value:**
+* Demonstrates provider pattern architecture — a real professional skill
+* Shows both local AI and cloud API integration in one project
+* More impressive than a simple ChatGPT wrapper
 
 **Assessment:** This app provides **incremental but meaningful improvements** over general-purpose AI tools. The value is particularly strong for serious German learners who want structured, unlimited practice without ongoing costs. The development experience remains highly valuable for mastering local AI integration regardless of the competitive landscape.

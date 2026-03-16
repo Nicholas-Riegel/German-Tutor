@@ -1,5 +1,10 @@
 # German Tutor - Development Setup & Progress Tracker
 
+VERY IMPORTANT: Please read the entire document before starting development. This is a comprehensive blueprint for the AI German Tutor project, covering architecture, tech stack, development approach, testing strategy, and current status.
+Please remember that this is a learning project. 
+I want to go one step at a time. 
+For each step I want you to explain to me what you are going to do. Wait for my ok before you do it. 
+
 ## Project Structure
 
 ```
@@ -9,7 +14,19 @@ german-tutor/
 │   │   ├── __init__.py
 │   │   ├── main.py         # FastAPI app entry point
 │   │   ├── routers/        # API endpoints
-│   │   ├── services/       # AI service integrations
+│   │   ├── services/       # AI service abstractions (provider pattern)
+│   │   │   ├── llm/
+│   │   │   │   ├── base.py         # LLMService interface
+│   │   │   │   ├── ollama.py       # OllamaProvider (local)
+│   │   │   │   └── openai.py       # OpenAIProvider (cloud)
+│   │   │   ├── stt/
+│   │   │   │   ├── base.py         # STTService interface
+│   │   │   │   ├── whisper_local.py # LocalWhisperProvider
+│   │   │   │   └── openai.py       # OpenAISTTProvider
+│   │   │   └── tts/
+│   │   │       ├── base.py         # TTSService interface
+│   │   │       ├── edge.py         # EdgeTTSProvider (free, Microsoft Neural)
+│   │   │       └── openai.py       # OpenAITTSProvider
 │   │   ├── database/       # SQLite models and operations
 │   │   ├── config/         # Configuration management
 │   │   └── models/         # Pydantic data models
@@ -38,47 +55,30 @@ german-tutor/
 ## Environment Setup
 
 ### Prerequisites
-- [ ] macOS with Homebrew installed
-- [ ] Python 3.9+ (check with `python3 --version`)
-- [ ] Node.js 18+ (check with `node --version`)
-- [ ] Git configured
+- [x] macOS with Homebrew installed
+- [x] Python 3.9+ (check with `python3 --version`)
+- [x] Node.js 18+ (check with `node --version`)
+- [x] Git configured
 
 ### Phase 1: AI Foundation Setup
 
 #### Install Ollama
-- [ ] Install Ollama: `brew install ollama`
-- [ ] Start Ollama service: `ollama serve` (run in background)
-- [ ] Test download small model first: `ollama pull llama3.2:1b`
-- [ ] Verify installation: `ollama list`
+- [x] Install Ollama: `brew install ollama`
+- [x] Start Ollama service: `ollama serve` (run in background)
+- [x] Test download small model first: `ollama pull llama3.2:1b`
+- [x] Verify installation: `ollama list`
 
 #### Install German Models (Phase 1: Testing)
-- [ ] Download SmolLM2-German for testing: `ollama pull smollm2-german:360m`
-- [ ] Test basic German conversation: `ollama run smollm2-german:360m`
-- [ ] Note: OpenEuroLLM-German (7B) installation planned for later
+- [x] Verify German model: `smollm2-german:360m` and `OpenEuroLLM-German` do not exist in Ollama registry — using `llama3.2` (already installed, multilingual, confirmed fluent German) ✅
+- [x] Test basic German conversation: `ollama run llama3.2` — confirmed fluent German responses ✅
+- [ ] Optional: Evaluate `mistral` or `llama3.1` for comparison later
 
 #### Install Python Dependencies
-- [ ] Create virtual environment: `python3 -m venv venv`
-- [ ] Activate environment: `source venv/bin/activate`
-- [ ] Create initial requirements.txt:
-```
-fastapi
-uvicorn
-python-multipart
-openai-whisper
-TTS
-requests
-pydantic
-mypy
-pytest>=7.0.0
-pytest-asyncio
-pytest-mock
-sqlalchemy
-aiosqlite
-python-dotenv
-pydub
-filetype
-```
-- [ ] Install dependencies: `pip install -r requirements.txt`
+- [x] Create virtual environment: `python3 -m venv backend/venv`
+- [x] Activate environment: `source backend/venv/bin/activate`
+- [x] Create `backend/requirements.txt` (fastapi, uvicorn, pydantic, sqlalchemy, aiosqlite, openai-whisper, openai, edge-tts, httpx, requests, pydub, filetype, mypy, pytest, etc.)
+- [x] Install dependencies: `pip install -r backend/requirements.txt` ✅
+  - Note: `TTS` (Coqui) removed — Python 3.12 incompatible. Replaced with `edge-tts` (Microsoft Neural voices, free, excellent German support)
 - [ ] Set up mypy for type checking: `mypy --install-types`
 
 #### Test Whisper Installation
@@ -86,66 +86,70 @@ filetype
 - [ ] Download German-optimized model: `whisper --model large-v3-turbo --language German <test_audio.wav>`
 
 #### Backend Project Setup
-- [ ] Create backend directory structure (see above)
+- [x] Create backend directory structure (`backend/app/`, `backend/app/config/`, `__init__.py` files) ✅
 - [ ] Create `.env.example` file with configuration template
-- [ ] Initialize FastAPI app in `backend/app/main.py`
+- [x] Initialize FastAPI app in `backend/app/main.py` ✅
 - [ ] Set up SQLite database connection
-- [ ] Create basic health check endpoint
-- [ ] Test server: `uvicorn app.main:app --reload`
-- [ ] Verify at http://localhost:8000/docs
+- [x] Create basic health check endpoint ✅
+- [x] Test server: `uvicorn app.main:app --reload --app-dir backend` ✅
+- [x] Verify at http://localhost:8000/health ✅
 
 #### Configuration Setup
-- [ ] Copy `.env.example` to `.env`: `cp .env.example .env` 
+- [ ] Copy `.env.example` to `.env`: `cp .env.example .env`
+- [ ] Add OpenAI API key to `.env` (optional, for cloud provider)
 - [ ] Create application data directory: `mkdir -p ~/.german-tutor/{audio,models}`
 - [ ] Test configuration loading in FastAPI app
-- [ ] Verify database initialization and model selection logic
+- [ ] Verify provider selection logic (ollama vs openai)
 
 ---
 
 ## Phase-by-Phase Progress Tracker
 
 ### Phase 1: AI Foundation Setup (Days 1-3) ✅ ❌ 🔄
-**Learning Goals:** Local AI ecosystem, model management
+**Learning Goals:** Provider pattern architecture, local AI + cloud API integration
 
-- [ ] **Day 1:** Ollama installation and basic model testing
-  - [ ] Install Ollama and SmolLM2-German
-  - [ ] Test basic German responses
-  - [ ] Document model performance on M2
+- [x] **Day 1:** Ollama installation and German model verification
+  - [x] Install Ollama and verify llama3.2 speaks German fluently ✅
+  - [x] Test basic German responses (2.35s response time on M2) ✅
+  - [x] Decision: use provider pattern to support both local and OpenAI ✅
   
-- [ ] **Day 2:** FastAPI setup and LLM integration
-  - [ ] Create FastAPI project structure with Pydantic models
+- [ ] **Day 2:** FastAPI setup with provider pattern
+  - [x] Create FastAPI project structure ✅
+  - [x] Create configuration system for provider switching via `.env` (`settings.py`) ✅
+  - [ ] Build LLMService base interface
+  - [ ] Implement OllamaProvider and OpenAIProvider
+  - [ ] Build typed chat endpoint, test with both providers
+  - [ ] Verify auto-generated docs at `/docs`
+  
+- [ ] **Day 3:** Provider validation and database setup
   - [ ] Set up SQLite database with SQLAlchemy
-  - [ ] Create configuration management system (.env file)
-  - [ ] Build typed chat endpoint with Ollama integration
-  - [ ] Add Python type hints to all functions
-  - [ ] Test API with Postman/curl and verify auto-generated docs
-  
-- [ ] **Day 3:** Model evaluation and optimization
-  - [ ] Test OpenEuroLLM-German (7B) if RAM allows
-  - [ ] Compare model performance and response quality
-  - [ ] Finalize model choice for MVP
+  - [ ] Test conversation history storage
+  - [ ] Verify both providers return consistent response format
 
 **Completion Criteria:** ✅ Working FastAPI endpoint that accepts German text and returns AI responses
 
 ---
 
 ### Phase 2: Speech Processing Pipeline (Days 4-6) ✅ ❌ 🔄
-**Learning Goals:** Audio processing, STT/TTS integration
+**Learning Goals:** Audio processing, STT/TTS provider integration
 
-- [ ] **Day 4:** Whisper STT integration
-  - [ ] Add audio file upload endpoint
-  - [ ] Integrate Whisper for German speech-to-text
-  - [ ] Test with sample German audio files
+- [ ] **Day 4:** STT provider integration
+  - [ ] Build STTService base interface
+  - [ ] Implement LocalWhisperProvider
+  - [ ] Implement OpenAISTTProvider
+  - [ ] Test both with sample German audio files
   
-- [ ] **Day 5:** Coqui TTS setup
-  - [ ] Install Coqui TTS with German Thorsten voice
-  - [ ] Create text-to-speech endpoint
-  - [ ] Test German audio output quality
+- [ ] **Day 5:** TTS provider integration
+  - [ ] Build TTSService base interface
+  - [ ] Implement EdgeTTSProvider (free, uses Microsoft Neural voices — de-DE-ConradNeural / de-DE-KatjaNeural)
+  - [ ] Implement OpenAITTSProvider
+  - [ ] Test German audio output quality from both
   
 - [ ] **Day 6:** Complete pipeline integration
   - [ ] Create combined STT → LLM → TTS endpoint
-  - [ ] Test full voice conversation pipeline
-  - [ ] Optimize response times
+  - [ ] Test full pipeline with local providers
+  - [ ] Test full pipeline with OpenAI providers
+  - [ ] Compare response times between local and cloud
 
 **Completion Criteria:** ✅ Working API endpoint that accepts German audio and returns German audio response
 

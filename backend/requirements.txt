@@ -1,0 +1,38 @@
+# Web framework
+fastapi          # The web framework powering our backend API. Receives requests from the frontend and auto-generates docs at /docs.
+uvicorn[standard] # The engine that runs FastAPI. FastAPI is the app, Uvicorn is what executes it.
+
+# Data validation and environment
+pydantic          # Enforces that data has the right shape and types. FastAPI uses it automatically for request/response validation.
+pydantic-settings # Extends Pydantic to read settings from the .env file (API keys, provider choices, etc.)
+python-dotenv     # Loads the .env file so secrets like OPENAI_API_KEY are available without hardcoding them.
+
+# Database
+sqlalchemy        # Toolkit for talking to SQLite. Lets us write Python instead of raw SQL to save/retrieve conversations.
+aiosqlite         # Makes SQLite work asynchronously (non-blocking), required because FastAPI is async by design.
+
+# Audio handling
+python-multipart  # Allows FastAPI to receive file uploads (audio recordings from the browser).
+pydub             # Manipulates audio files: converts formats, trims silence, adjusts volume, etc.
+filetype          # Detects the type of uploaded file by inspecting its contents (not just the filename) — used for security validation.
+
+# OpenAI provider (LLM, STT, TTS)
+openai            # Official OpenAI Python library. Used for GPT-4o (LLM), Whisper API (STT), and TTS API — all three cloud providers.
+
+# Local Whisper STT provider
+openai-whisper    # Runs OpenAI's Whisper speech-to-text model locally on your Mac. Same model as the API, but free and offline (slower).
+
+# Free TTS provider (uses Microsoft Edge neural voices — free, internet required)
+edge-tts          # Accesses Microsoft's neural TTS voices (e.g. de-DE-ConradNeural, de-DE-KatjaNeural). Free, high quality German, no API key needed.
+
+# Local LLM provider (HTTP calls to Ollama)
+requests          # Simple HTTP library used to call Ollama's local server at http://localhost:11434.
+httpx             # Modern async HTTP client, also used for Ollama. Preferred in async FastAPI code.
+
+# Type checking
+mypy              # Checks Python code for type errors before you run it. Like a spell-checker for data types — catches bugs early.
+
+# Testing
+pytest>=7.0.0     # The testing framework. Lets us write and run automated tests.
+pytest-asyncio    # Extends pytest to handle async functions, needed since FastAPI uses async/await throughout.
+pytest-mock       # Lets us "mock" external services in tests (e.g. fake an Ollama response so tests run without Ollama actually running).
