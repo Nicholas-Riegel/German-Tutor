@@ -113,13 +113,14 @@ german-tutor/
   - [x] Test basic German responses (2.35s response time on M2) ✅
   - [x] Decision: use provider pattern to support both local and OpenAI ✅
   
-- [ ] **Day 2:** FastAPI setup with provider pattern
+- [x] **Day 2:** FastAPI setup with provider pattern
   - [x] Create FastAPI project structure ✅
   - [x] Create configuration system for provider switching via `.env` (`settings.py`) ✅
-  - [ ] Build LLMService base interface
-  - [ ] Implement OllamaProvider and OpenAIProvider
-  - [ ] Build typed chat endpoint, test with both providers
-  - [ ] Verify auto-generated docs at `/docs`
+  - [x] Build LLMService base interface (`services/llm/base.py`) ✅
+  - [x] Implement OllamaProvider and OpenAIProvider ✅
+  - [x] Build factory function (`services/llm/factory.py`) ✅
+  - [x] Build typed chat endpoint (`routers/chat.py`), tested and working ✅
+  - [x] Verify auto-generated docs at `/docs` ✅
   
 - [ ] **Day 3:** Provider validation and database setup
   - [ ] Set up SQLite database with SQLAlchemy

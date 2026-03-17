@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from app.config.settings import settings
+from app.routers import chat
 
 app = FastAPI(
     title="German Tutor API",
     description="AI-powered German conversation tutor",
     version="0.1.0",
 )
+
+# Register the chat router — this adds all routes defined in routers/chat.py to the app
+app.include_router(chat.router)
 
 
 @app.get("/health")
